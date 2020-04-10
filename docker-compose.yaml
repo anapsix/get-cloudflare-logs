@@ -1,0 +1,66 @@
+version: '2.4'
+
+services:
+  get-logs:
+    build: .
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    environment:
+    - CF_ZONE_ID    # =${CF_ZONE_ID}
+    - CF_AUTH_EMAIL # =${CF_AUTH_EMAIL}
+    - CF_AUTH_KEY   # =${CF_AUTH_KEY}
+    - SAMPLE_RATE=0.01
+    - ES_HOST=http://elasticsearch:9200
+    - ES_INDEX=cloudflare-test
+    - ES_INDEX_SHARDS=1
+    - ES_INDEX_REPLICAS=0
+    - ES_INDEX_REFRESH=10s
+    healthcheck:
+      test: 'pgrep filebeat || exit 1'
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+    - get-logs
+    links:
+    - elasticsearch
+    volumes:
+    - './logs:/logs'
+  elasticsearch:
+    image: 'docker.elastic.co/elasticsearch/elasticsearch:7.6.2'
+    ports:
+    - '9200:9200'
+    environment:
+    - discovery.type=single-node
+    healthcheck:
+      test: 'curl -f http://127.0.0.1:9200 || exit 1'
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+    networks:
+    - get-logs
+  kibana:
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    image: 'docker.elastic.co/kibana/kibana:7.6.2'
+    ports:
+    - '5601:5601'
+    healthcheck:
+      test: 'curl -f http://127.0.0.1:5601/api/status || exit 1'
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+    - get-logs
+    links:
+    - elasticsearch
+
+networks:
+  get-logs:

@@ -1,0 +1,11 @@
+# {{- if .Release.Namespace -}}
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: {{ .Release.Namespace }}
+#   labels:
+#     name: {{ .Release.Namespace }}
+#     helm.sh/chart: {{ .Chart.Name }}
+#     app.kubernetes.io/version: {{ .Chart.Version }}
+#     app.kubernetes.io/managed-by: Helm
+# {{- end -}}

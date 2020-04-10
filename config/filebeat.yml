@@ -1,0 +1,76 @@
+path.home: /opt/filebeat
+
+filebeat.inputs:
+- type: log
+  paths:
+    - ${CF_LOGS_DIRECTORY:/logs}/cloudflare_*.log
+  encoding: utf8
+  close_timeout: 5m
+  processors:
+  - script:
+      lang: javascript
+      id: json_decode
+      source: >
+        function process(event) {
+          var msg = event.Get('message');
+          var msg_parsed = JSON.parse(msg);
+          msg_parsed['EdgeStartTime'] = new Date(Math.floor(msg_parsed['EdgeStartTimestamp']/1000000));
+          msg_parsed['EdgeEndTime'] = new Date(Math.floor(msg_parsed['EdgeEndTimestamp']/1000000));
+          msg_parsed['EdgeDuration'] = msg_parsed['EdgeEndTime'] - msg_parsed['EdgeStartTime'];
+          if (msg_parsed['EdgeResponseCompressionRatio']) {
+            msg_parsed['EdgeResponseCompressionRatio'] = parseFloat(msg_parsed['EdgeResponseCompressionRatio']);
+          }
+          event.Put('@metadata._id',msg_parsed['RayID']);
+          event.Put('@timestamp',msg_parsed['EdgeStartTime']);
+          event.Put('cloudflare',msg_parsed);
+          event.Delete('message');
+        }
+
+http.enabled: false
+http.port: 5066
+
+logging:
+  level: info
+  metrics.enabled: false
+  to_files: false
+  to_stderr: true
+  to_syslog: false
+
+output.elasticsearch:
+  enabled: true
+  hosts: '${ES_HOST:http://elasticsearch:9200}'
+  username: '${ES_USERNAME:unset}'
+  password: '${ES_PASSWORD:unset}'
+  index: '${ES_INDEX:cloudflare-test}'
+
+output.file:
+  enabled: false
+
+setup.dashboard:
+  enabled: false
+
+setup.ilm:
+  check_exists: true
+  enabled: false
+  overwrite: false
+  pattern: '{now/M{YYYY.MM}}-000001'
+  policy_name: '${ES_INDEX:cloudflare-test}'
+  rollover_alias: '${ES_INDEX:cloudflare-test}'
+
+setup.kibana:
+  enabled: false
+
+setup.template:
+  enabled: false
+  name: '${ES_INDEX:cloudflare-test}'
+  overwrite: false
+  pattern: '${ES_INDEX:cloudflare-test}-*'
+  # fields: "fields.yml"
+  json.enabled: true
+  json.path: '/opt/filebeat/index-template.json'
+  json.name: '${ES_INDEX:cloudflare-test}'
+  settings:
+    # _source.enabled: false
+    index.number_of_shards: ${ES_INDEX_SHARDS:6}
+    index.number_of_replicas: ${ES_INDEX_REPLICAS:0}
+    index.refresh_interval: ${ES_INDEX_REFRESH:5s}

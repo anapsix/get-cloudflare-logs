@@ -1,0 +1,2 @@
+See application pods status by running these commands:
+kubectl --namespace {{ .Release.Namespace }} get pods
