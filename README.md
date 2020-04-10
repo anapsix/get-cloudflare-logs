@@ -65,6 +65,11 @@ docker run -it --rm \
   get-logs
 ```
 
+## License
+
+Open-sourced software licensed under the MIT license.
+
+
 ## Acknowledgments
 
 This repo includes and relies on [go-tasks][go-tasks], created by [Martin Fabrizzio Vilche][mvilche]
@@ -75,4 +80,5 @@ This repo includes and relies on [go-tasks][go-tasks], created by [Martin Fabriz
 [compose-env-file]: https://docs.docker.com/compose/compose-file/#env_file
 [compose-environment]: https://docs.docker.com/compose/compose-file/#environment
 [docker-compose.yaml]: ./docker-compose.yaml
-[go-taks]: https://github.com/mvilche/go-tasks
+[go-tasks]: https://github.com/mvilche/go-tasks
+[mvilche]: https://github.com/mvilche
