@@ -65,9 +65,14 @@ docker run -it --rm \
   get-logs
 ```
 
+## Acknowledgments
+
+This repo includes and relies on [go-tasks][go-tasks], created by [Martin Fabrizzio Vilche][mvilche]
+
 [link reference]::
 [logpull]: https://developers.cloudflare.com/logs/logpull-api/
 [filebeat]: https://www.elastic.co/guide/en/beats/filebeat/master/filebeat-overview.html
 [compose-env-file]: https://docs.docker.com/compose/compose-file/#env_file
 [compose-environment]: https://docs.docker.com/compose/compose-file/#environment
 [docker-compose.yaml]: ./docker-compose.yaml
+[go-taks]: https://github.com/mvilche/go-tasks
