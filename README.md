@@ -1,4 +1,4 @@
-Retrieving Cloudflare logs via [Logpull API][logpull], and pushing them
+Retrieving Cloudflare logs via [Logpull API][logpull] with [feron][feron], and pushing them
 into Elasticsearch with [Filebeat][filebeat].
 
 
@@ -80,5 +80,6 @@ This repo includes and relies on [go-tasks][go-tasks], created by [Martin Fabriz
 [compose-env-file]: https://docs.docker.com/compose/compose-file/#env_file
 [compose-environment]: https://docs.docker.com/compose/compose-file/#environment
 [docker-compose.yaml]: ./docker-compose.yaml
+[feron]: https://github.com/anapsix/feron/
 [go-tasks]: https://github.com/mvilche/go-tasks
 [mvilche]: https://github.com/mvilche

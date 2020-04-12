@@ -125,6 +125,14 @@ get_logs() {
   local _end_epoch="$(date +%s -d "${_end_utc}")"
   local _start_epoch="$((${_end_epoch}-360))"
   local _suffix="$(date +%F_%H:%M:%S -d "@${_start_epoch}")"
+  /usr/local/bin/feron \
+    --fields=all \
+    --sample="${SAMPLE_RATE}" \
+    --start="${_start_epoch}" \
+    --end="${_end_epoch}" \
+    --exclude-empty \
+    > ${CF_LOGS_DIRECTORY}/cloudflare_${_suffix}.log
+
   /usr/local/bin/get_cloudflare_logs.sh \
     --access-logs \
     --start="@${_start_epoch}" \
