@@ -2,6 +2,7 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+terminationGracePeriodSeconds: 15
 revisionHistoryLimit: 10
 
 image:
@@ -21,9 +22,11 @@ config:
     authKey: "51e241f08e014feb95d1b2760228d12a2df50"
   elasticsearch:
     host: "http://elasticsearch:9200"  # make sure to always include port!
+    username: ~  # for password protected Elasticsearch instances
+    password: ~  # set username and password
     index:
       name: "cloudflare-access"
-      shards: "1"
+      shards: "5"
       replicas: "0"
       refreshInterval: "5s"
 

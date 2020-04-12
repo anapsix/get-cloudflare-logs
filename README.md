@@ -2,6 +2,11 @@ Retrieving Cloudflare logs via [Logpull API][logpull] with [feron][feron], and p
 into Elasticsearch with [Filebeat][filebeat].
 
 
+## Helm Chart
+
+The whole shebang can be installed onto K8s cluster with included [Helm chart][helm-chart].
+
+
 ## Local Development
 
 ### Build
@@ -80,6 +85,7 @@ This repo includes and relies on [go-tasks][go-tasks], created by [Martin Fabriz
 [compose-env-file]: https://docs.docker.com/compose/compose-file/#env_file
 [compose-environment]: https://docs.docker.com/compose/compose-file/#environment
 [docker-compose.yaml]: ./docker-compose.yaml
+[helm-chart]: ./helm
 [feron]: https://github.com/anapsix/feron/
 [go-tasks]: https://github.com/mvilche/go-tasks
 [mvilche]: https://github.com/mvilche
