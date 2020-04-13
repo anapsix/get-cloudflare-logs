@@ -68,6 +68,8 @@ spec:
             value: {{ .Values.config.elasticsearch.index.replicas | quote }}
           - name: ES_INDEX_REFRESH
             value: {{ .Values.config.elasticsearch.index.refreshInterval | quote }}
+          - name: ES_INDEX_DEFAULT_PIPELINE_ENABLED
+            value: {{ .Values.config.defaultPipeline.enabled | quote }}
           livenessProbe:
             exec:
               command:

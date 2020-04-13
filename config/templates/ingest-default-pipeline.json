@@ -1,0 +1,28 @@
+{
+  "description": "Cloudflare Log Pipeline",
+  "processors": [
+    {
+      "geoip": {
+        "field": "cloudflare.ClientIP",
+        "properties": [
+          "country_iso_code",
+          "country_name",
+          "continent_name",
+          "region_iso_code",
+          "region_name",
+          "city_name",
+          "timezone",
+          "location"
+        ],
+        "target_field": "extra.geoip"
+      }
+    },
+    {
+      "user_agent": {
+        "field": "cloudflare.ClientRequestUserAgent",
+        "target_field": "extra.user_agent",
+        "ignore_failure": true
+      }
+    }
+  ]
+}

@@ -16,6 +16,8 @@ fullnameOverride: ""
 
 config:
   sampleRate: "0.01"
+  defaultPipeline:
+    enabled: true  # installs "cloudflare" pipeline, and enables it for configured index
   cloudflare:
     zoneId: "51e241f08e014feb95d1b2760228d12a"
     authEmail: "admin@example.com"

@@ -31,6 +31,7 @@ COPY scripts/go-tasks /usr/local/bin/
 COPY config/filebeat.yml ${FILEBEAT_HOME}/
 COPY config/fields.yml ${FILEBEAT_HOME}/
 COPY config/templates/index-template.json.tpl ${FILEBEAT_HOME}/
+COPY config/templates/ingest-default-pipeline.json ${FILEBEAT_HOME}/
 COPY scripts/get_cloudflare_logs.sh /usr/local/bin/
 COPY scripts/docker-entrypoint.sh /usr/local/bin/
 VOLUME ["/logs"]

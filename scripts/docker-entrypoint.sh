@@ -14,16 +14,59 @@ set -o pipefail
 : ${INDEX_TEMPLATE_FILE:='/opt/filebeat/index-template.json.tpl'}
 : ${SAMPLE_RATE:='0.01'}
 
+: ${ES_HOST:='http://elasticsearch:9200'}
+: ${ES_USERNAME:='_unset_'}
+: ${ES_PASSWORD:='_unset_'}
+
 : ${ES_INDEX:='cloudflare-test'}
 : ${ES_INDEX_SHARDS:=6}
 : ${ES_INDEX_REPLICAS:=0}
 : ${ES_INDEX_REFRESH:='5s'}
 : ${ES_INDEX_JSON_ENABLED:='true'}
 
+: ${ES_INDEX_DEFAULT_PIPELINE:='cloudflare'}
+: ${ES_INDEX_DEFAULT_PIPELINE_FILE:='/opt/filebeat/ingest-default-pipeline.json'}
+: ${ES_INDEX_DEFAULT_PIPELINE_ENABLED:='true'}
+
 export TZ='UTC'
 export CF_AUTH_EMAIL CF_AUTH_KEY CF_ZONE_ID CF_LOGS_DIRECTORY
 export FILEBEAT_CONFIG ES_INDEX_JSON_ENABLED
 export ES_INDEX ES_INDEX_SHARDS ES_INDEX_REPLICAS ES_INDEX_REFRESH
+
+rawurlencode() {
+  local string="${1}"
+  local strlen=${#string}
+  local encoded=""
+  local pos c o
+
+  for (( pos=0 ; pos<strlen ; pos++ )); do
+     c=${string:$pos:1}
+     case "$c" in
+        [-_.~a-zA-Z0-9] ) o="${c}" ;;
+        * ) printf -v o '%%%02x' "'$c" ;;
+     esac
+     encoded+="${o}"
+  done
+  echo "${encoded}"
+}
+
+install_pipeline() {
+  local ES_CREDENTIALS
+  if [[ ! -r "${ES_INDEX_DEFAULT_PIPELINE_FILE}" ]]; then
+    echo >&2 "ERROR: default index pipeline cannot be read at \"${ES_INDEX_DEFAULT_PIPELINE_FILE}\""
+    exit 1
+  fi
+  if [[ "${ES_USERNAME}" != "_unset_" ]] && [[ "${ES_PASSWORD}" != "_unset_" ]]; then
+    ES_CREDENTIALS="$(rawurlencode "${ES_USERNAME}"):$(rawurlencode "${ES_PASSWORD}")@"
+  fi
+  local ES_URL="${ES_HOST%%/*}//${ES_CREDENTIALS:-}${ES_HOST##*/}/_ingest/pipeline/${ES_INDEX_DEFAULT_PIPELINE}"
+  curl \
+    -sS \
+    -X PUT \
+    -H "Content-Type: application/json" \
+    -d @"${ES_INDEX_DEFAULT_PIPELINE_FILE}" \
+    "${ES_URL}"
+}
 
 generate_index_template() {
   jq \
@@ -32,14 +75,20 @@ generate_index_template() {
     --arg shards "${ES_INDEX_SHARDS}" \
     --arg replicas "${ES_INDEX_REPLICAS}" \
     --arg refresh_interval "${ES_INDEX_REFRESH}" \
+    --arg default_pipeline "${ES_INDEX_DEFAULT_PIPELINE}" \
+    --arg default_pipeline_enabled "${ES_INDEX_DEFAULT_PIPELINE_ENABLED}" \
     '
     .index_patterns = $ip |
     .settings.index.lifecycle.name = $idx |
     .settings.index.lifecycle.rollover_alias = $idx |
     .settings.index.number_of_shards = $shards |
     .settings.index.number_of_replicas = $replicas |
-    .settings.index.refresh_interval = $refresh_interval
-    ' \
+    .settings.index.refresh_interval = $refresh_interval |
+    if ($default_pipeline_enabled == "true") then
+      .settings.index.default_pipeline = $default_pipeline
+    else
+      .
+    end' \
     "${INDEX_TEMPLATE_FILE}" \
     > /opt/filebeat/index-template.json
 }
@@ -162,6 +211,12 @@ else
   echo >&2 '## generating crontab entry'
   echo >&2
   setup_cron
+
+  if [[ "${ES_INDEX_DEFAULT_PIPELINE_ENABLED}" == "true" ]]; then
+    echo >&2 '## installing default pipeline'
+    echo >&2
+    install_pipeline
+  fi
 
   if [[ "${ES_INDEX_JSON_ENABLED}" == "true" ]]; then
     echo >&2 '## generating index template'
