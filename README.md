@@ -1,6 +1,8 @@
 Retrieving Cloudflare logs via [Logpull API][logpull] with [feron][feron], and pushing them
 into Elasticsearch with [Filebeat][filebeat].
 
+![Docker Pulls](https://img.shields.io/docker/pulls/anapsix/get-cloudflare-logs?style=flat-square) ![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/anapsix/get-cloudflare-logs?style=flat-square)
+
 
 ## Helm Chart
 
@@ -69,6 +71,7 @@ docker run -it --rm \
   --link es:elasticsearch \
   get-logs
 ```
+
 
 ## License
 
