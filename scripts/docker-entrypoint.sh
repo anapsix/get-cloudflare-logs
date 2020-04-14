@@ -24,6 +24,9 @@ set -o pipefail
 : ${ES_INDEX_REFRESH:='5s'}
 : ${ES_INDEX_JSON_ENABLED:='true'}
 
+: ${ES_ILM_DEFAULT_POLICY_FILE:='/opt/filebeat/ilm-default-policy.json'}
+: ${ES_ILM_DEFAULT_POLICY_ENABLED:='true'}
+
 : ${ES_INDEX_DEFAULT_PIPELINE:='cloudflare'}
 : ${ES_INDEX_DEFAULT_PIPELINE_FILE:='/opt/filebeat/ingest-default-pipeline.json'}
 : ${ES_INDEX_DEFAULT_PIPELINE_ENABLED:='true'}
@@ -212,6 +215,12 @@ else
   echo >&2
   setup_cron
 
+  if [[ "${ES_ILM_DEFAULT_POLICY_ENABLED}" == "true" ]]; then
+    echo >&2 '### using default ilm policy'
+    echo >&2
+    ilm_policy_file_arg="-E setup.ilm.policy_file='${ES_ILM_DEFAULT_POLICY_FILE}'"
+  fi
+
   if [[ "${ES_INDEX_DEFAULT_PIPELINE_ENABLED}" == "true" ]]; then
     echo >&2 '## installing default pipeline'
     echo >&2
@@ -230,6 +239,7 @@ else
     -c "${FILEBEAT_CONFIG}" \
     -E setup.ilm.enabled=true \
     -E setup.ilm.overwrite=true \
+    ${ilm_policy_file_arg:-} \
     -E setup.template.enabled=true \
     -E setup.template.overwrite=true \
     -E setup.template.json.enabled=${ES_INDEX_JSON_ENABLED} \

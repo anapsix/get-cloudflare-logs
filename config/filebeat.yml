@@ -55,6 +55,7 @@ setup.ilm:
   overwrite: false
   pattern: '{now/M{YYYY.MM}}-000001'
   policy_name: '${ES_INDEX:cloudflare-test}'
+  # policy_file: ${ES_ILM_POLICY_FILE}
   rollover_alias: '${ES_INDEX:cloudflare-test}'
 
 setup.kibana:
