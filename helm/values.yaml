@@ -2,6 +2,28 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# application config
+config:
+  cloudflare:
+    zoneId: "51e241f08e014feb95d1b2760228d12a"
+    authEmail: "admin@example.com"
+    authKey: "51e241f08e014feb95d1b2760228d12a2df50"
+    sampleRate: "0.01"
+  elasticsearch:
+    host: "http://elasticsearch:9200"  # make sure to always include port!
+    username: ~  # for password protected Elasticsearch instances
+    password: ~  # set username and password
+    index:
+      name: "cloudflare-access"
+      shards: "5"
+      replicas: "0"
+      refreshInterval: "5s"
+    pipeline:
+      default: true  # enabled use of default pipeline
+    ilm:
+      default: true  # enables use of default ilm policy
+
+# k8s objects config
 terminationGracePeriodSeconds: 15
 revisionHistoryLimit: 10
 
@@ -13,24 +35,6 @@ image:
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
-
-config:
-  sampleRate: "0.01"
-  defaultPipeline:
-    enabled: true  # installs "cloudflare" pipeline, and enables it for configured index
-  cloudflare:
-    zoneId: "51e241f08e014feb95d1b2760228d12a"
-    authEmail: "admin@example.com"
-    authKey: "51e241f08e014feb95d1b2760228d12a2df50"
-  elasticsearch:
-    host: "http://elasticsearch:9200"  # make sure to always include port!
-    username: ~  # for password protected Elasticsearch instances
-    password: ~  # set username and password
-    index:
-      name: "cloudflare-access"
-      shards: "5"
-      replicas: "0"
-      refreshInterval: "5s"
 
 serviceAccount:
   # Specifies whether a service account should be created

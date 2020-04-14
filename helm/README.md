@@ -11,6 +11,7 @@ To install the chart with the release name `my-release` (i.e. `${CF_ZONE_NAME}`)
 ```sh
 helm install my-release \
   --namespace=get-cloudflare-logs \
+  --set config.cloudflare.sampleRate="0.01" \
   --set config.cloudflare.zoneId="${CF_ZONE_ID}" \
   --set config.cloudflare.authEmail="${CF_AUTH_EMAIL}" \
   --set config.cloudflare.authKey="${CF_AUTH_KEY}" \
@@ -46,7 +47,7 @@ $ helm delete my-release
 `nodeSelector`                  | Node labels for pod assignment         | `{}`
 `resources`                     | Pod resource requests & limits         | `{}`
 `tolerations`                   | List of node taints to tolerate        | `[]`
-`config.sampleRate`             | CF logs sample rate (0.01 = 1%)        | `0.01`
+`config.cloudflare.sampleRate`  | CF logs sample rate (0.01 = 1%)        | `0.01`
 `config.cloudflare.zoneId`      | CF Zone ID to pull logs for            | `51e241f08e014feb95d1b2760228d12a` (fake)
 `config.cloudflare.authEmail`   | CF Auth Email                          | `admin@example.com` (fake)
 `config.cloudflare.authKey`     | CF Auth Key                            | `51e241f08e014feb95d1b2760228d12a2df50` (fake)
@@ -57,3 +58,5 @@ $ helm delete my-release
 `config.elasticsearch.index.shards`   | Elasticsearch dst index shards   | `5`
 `config.elasticsearch.index.replicas` | Elasticsearch dst index replicas | `0`
 `config.elasticsearch.index.refreshInterval` | Elasticsearch dst index refresh interval | `5s`
+`config.elasticsearch.ilm.default`      | Enables use of default ILM policy | `true`
+`config.elasticsearch.pipeline.default` | Enables use of default Ingest Pipeline | `true`

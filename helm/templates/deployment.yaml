@@ -47,7 +47,7 @@ spec:
                 name: {{ include "get-cloudflare-logs.fullname" . }}
                 key: CF_AUTH_KEY
           - name: SAMPLE_RATE
-            value: {{ .Values.config.sampleRate | quote }}
+            value: {{ .Values.config.cloudflare.sampleRate | quote }}
           - name: ES_HOST
             value: {{ .Values.config.elasticsearch.host | quote }}
           - name: ES_USERNAME
@@ -63,13 +63,15 @@ spec:
           - name: ES_INDEX
             value: {{ .Values.config.elasticsearch.index.name | quote }}
           - name: ES_INDEX_SHARDS
-            value: {{ .Values.config.elasticsearch.index.shard | quote }}
+            value: {{ .Values.config.elasticsearch.index.shards | quote }}
           - name: ES_INDEX_REPLICAS
             value: {{ .Values.config.elasticsearch.index.replicas | quote }}
           - name: ES_INDEX_REFRESH
             value: {{ .Values.config.elasticsearch.index.refreshInterval | quote }}
           - name: ES_INDEX_DEFAULT_PIPELINE_ENABLED
-            value: {{ .Values.config.defaultPipeline.enabled | quote }}
+            value: {{ default "false" .Values.config.elasticsearch.pipeline.default | quote }}
+          - name: ES_ILM_DEFAULT_POLICY_ENABLED
+            value: {{ default "false" .Values.config.elasticsearch.ilm.default | quote }}
           livenessProbe:
             exec:
               command:
