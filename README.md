@@ -1,7 +1,9 @@
 Retrieving Cloudflare logs via [Logpull API][logpull] with [feron][feron], and pushing them
 into Elasticsearch with [Filebeat][filebeat].
 
-![Docker Pulls](https://img.shields.io/docker/pulls/anapsix/get-cloudflare-logs?style=flat-square) ![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/anapsix/get-cloudflare-logs?style=flat-square)
+[![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/anapsix/get-cloudflare-logs?style=flat-square)][docker-hub-image]
+[![Docker Pulls](https://img.shields.io/docker/pulls/anapsix/get-cloudflare-logs?style=flat-square)][docker-hub-image]
+[![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/anapsix/get-cloudflare-logs?style=flat-square)][docker-hub-image]
 
 
 ## Helm Chart
@@ -92,3 +94,4 @@ This repo includes and relies on [go-tasks][go-tasks], created by [Martin Fabriz
 [feron]: https://github.com/anapsix/feron/
 [go-tasks]: https://github.com/mvilche/go-tasks
 [mvilche]: https://github.com/mvilche
+[docker-hub-image]: https://hub.docker.com/repository/docker/anapsix/get-cloudflare-logs
