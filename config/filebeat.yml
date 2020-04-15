@@ -50,28 +50,27 @@ setup.dashboard:
   enabled: false
 
 setup.ilm:
+  enabled: false  # ES_ILM_ENABLED in startup script
   check_exists: true
-  enabled: false
-  overwrite: false
+  overwrite: false  # ES_ILM_OVERWRITE in startup script
   pattern: '{now/M{YYYY.MM}}-000001'
   policy_name: '${ES_INDEX:cloudflare-test}'
-  # policy_file: ${ES_ILM_POLICY_FILE}
+  # policy_file: ${ES_ILM_POLICY_FILE} in startup script
   rollover_alias: '${ES_INDEX:cloudflare-test}'
 
 setup.kibana:
   enabled: false
 
 setup.template:
-  enabled: false
+  enabled: false  # ES_TEMPLATE_ENABLED in startup script
   name: '${ES_INDEX:cloudflare-test}'
-  overwrite: false
+  overwrite: false  # ES_TEMPLATE_OVERWRITE in startup script
   pattern: '${ES_INDEX:cloudflare-test}-*'
   # fields: "fields.yml"
-  json.enabled: true
-  json.path: '/opt/filebeat/index-template.json'
+  json.enabled: false  # ES_TEMPLATE_JSON_ENABLED in startup script
   json.name: '${ES_INDEX:cloudflare-test}'
+  json.path: '${ES_TEMPLATE_JSON_FILE:/opt/filebeat/index-template.json}'
   settings:
-    # _source.enabled: false
-    index.number_of_shards: ${ES_INDEX_SHARDS:6}
-    index.number_of_replicas: ${ES_INDEX_REPLICAS:0}
-    index.refresh_interval: ${ES_INDEX_REFRESH:5s}
+    index.number_of_shards: ${ES_TEMPLATE_INDEX_SHARDS:5}
+    index.number_of_replicas: ${ES_TEMPLATE_INDEX_REPLICAS:0}
+    index.refresh_interval: ${ES_TEMPLATE_INDEX_REFRESH:10s}

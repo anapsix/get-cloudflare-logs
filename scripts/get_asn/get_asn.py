@@ -14,5 +14,8 @@ with open(sys.argv[1]) as data_file:
   for line in data_file:
     ip = line.strip()
     obj = IPWhois(ip)
-    results = obj.lookup_rdap(depth=0,inc_raw=False,inc_nir=False,asn_methods=['dns'])
-    print('%s %s' % (ip, results['asn']))
+    try:
+      results = obj.lookup_rdap(depth=0,inc_raw=False,inc_nir=False,asn_methods=['dns'])
+      print('%s %s' % (ip, results['asn']))
+    except:
+      print('%s %s' % (ip, 'unknown'))
