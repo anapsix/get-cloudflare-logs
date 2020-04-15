@@ -19,21 +19,30 @@ set -o pipefail
 : ${ES_PASSWORD:='_unset_'}
 
 : ${ES_INDEX:='cloudflare-test'}
-: ${ES_INDEX_SHARDS:=6}
-: ${ES_INDEX_REPLICAS:=0}
-: ${ES_INDEX_REFRESH:='5s'}
-: ${ES_INDEX_JSON_ENABLED:='true'}
 
+: ${ES_TEMPLATE_ENABLED:='true'}
+: ${ES_TEMPLATE_OVERWRITE:='true'}
+: ${ES_TEMPLATE_INDEX_SHARDS:=6}
+: ${ES_TEMPLATE_INDEX_REPLICAS:=0}
+: ${ES_TEMPLATE_INDEX_REFRESH:='10s'}
+
+: ${ES_TEMPLATE_JSON_ENABLED:='true'}
+: ${ES_TEMPLATE_JSON_FILE:='/opt/filebeat/index-template.json'}
+
+: ${ES_ILM_ENABLED:='true'}
+: ${ES_ILM_OVERWRITE:='true'}
+: ${ES_ILM_POLICY_FILE:='_unset_'}
 : ${ES_ILM_DEFAULT_POLICY_FILE:='/opt/filebeat/ilm-default-policy.json'}
 : ${ES_ILM_DEFAULT_POLICY_ENABLED:='true'}
 
-: ${ES_INDEX_DEFAULT_PIPELINE:='cloudflare'}
-: ${ES_INDEX_DEFAULT_PIPELINE_FILE:='/opt/filebeat/ingest-default-pipeline.json'}
-: ${ES_INDEX_DEFAULT_PIPELINE_ENABLED:='true'}
+: ${ES_PIPELINE_ENABLED:='true'}
+: ${ES_PIPELINE_DEFAULT:='cloudflare'}
+: ${ES_PIPELINE_DEFAULT_FILE:='/opt/filebeat/ingest-default-pipeline.json'}
+: ${ES_PIPELINE_DEFAULT_ENABLED:='true'}
 
 export TZ='UTC'
 export CF_AUTH_EMAIL CF_AUTH_KEY CF_ZONE_ID CF_LOGS_DIRECTORY
-export FILEBEAT_CONFIG ES_INDEX_JSON_ENABLED
+export FILEBEAT_CONFIG
 export ES_INDEX ES_INDEX_SHARDS ES_INDEX_REPLICAS ES_INDEX_REFRESH
 
 rawurlencode() {
@@ -55,19 +64,19 @@ rawurlencode() {
 
 install_pipeline() {
   local ES_CREDENTIALS
-  if [[ ! -r "${ES_INDEX_DEFAULT_PIPELINE_FILE}" ]]; then
-    echo >&2 "ERROR: default index pipeline cannot be read at \"${ES_INDEX_DEFAULT_PIPELINE_FILE}\""
+  if [[ ! -r "${ES_PIPELINE_DEFAULT_FILE}" ]]; then
+    echo >&2 "ERROR: default index pipeline cannot be read at \"${ES_PIPELINE_DEFAULT_FILE}\""
     exit 1
   fi
   if [[ "${ES_USERNAME}" != "_unset_" ]] && [[ "${ES_PASSWORD}" != "_unset_" ]]; then
     ES_CREDENTIALS="$(rawurlencode "${ES_USERNAME}"):$(rawurlencode "${ES_PASSWORD}")@"
   fi
-  local ES_URL="${ES_HOST%%/*}//${ES_CREDENTIALS:-}${ES_HOST##*/}/_ingest/pipeline/${ES_INDEX_DEFAULT_PIPELINE}"
+  local ES_URL="${ES_HOST%%/*}//${ES_CREDENTIALS:-}${ES_HOST##*/}/_ingest/pipeline/${ES_PIPELINE_DEFAULT}"
   curl \
     -sS \
     -X PUT \
     -H "Content-Type: application/json" \
-    -d @"${ES_INDEX_DEFAULT_PIPELINE_FILE}" \
+    -d @"${ES_PIPELINE_DEFAULT_FILE}" \
     "${ES_URL}"
 }
 
@@ -75,11 +84,11 @@ generate_index_template() {
   jq \
     --arg idx "${ES_INDEX}" \
     --arg ip "${ES_INDEX}-*" \
-    --arg shards "${ES_INDEX_SHARDS}" \
-    --arg replicas "${ES_INDEX_REPLICAS}" \
-    --arg refresh_interval "${ES_INDEX_REFRESH}" \
-    --arg default_pipeline "${ES_INDEX_DEFAULT_PIPELINE}" \
-    --arg default_pipeline_enabled "${ES_INDEX_DEFAULT_PIPELINE_ENABLED}" \
+    --arg shards "${ES_TEMPLATE_INDEX_SHARDS}" \
+    --arg replicas "${ES_TEMPLATE_INDEX_REPLICAS}" \
+    --arg refresh_interval "${ES_TEMPLATE_INDEX_REFRESH}" \
+    --arg default_pipeline "${ES_PIPELINE_DEFAULT}" \
+    --arg default_pipeline_enabled "${ES_PIPELINE_DEFAULT_ENABLED}" \
     '
     .index_patterns = $ip |
     .settings.index.lifecycle.name = $idx |
@@ -93,7 +102,7 @@ generate_index_template() {
       .
     end' \
     "${INDEX_TEMPLATE_FILE}" \
-    > /opt/filebeat/index-template.json
+    > "${ES_TEMPLATE_JSON_FILE}"
 }
 
 init_message() {
@@ -138,9 +147,9 @@ cat <<EOM
   "EdgeResponseStatus": 200,
   "EdgeServerIP": "127.0.0.1",
   "EdgeStartTimestamp": 0000000010000000000,
-  "FirewallMatchesActions": [],
-  "FirewallMatchesRuleIDs": [],
-  "FirewallMatchesSources": [],
+  "FirewallMatchesActions": [ "simulate", "challenge" ],
+  "FirewallMatchesRuleIDs": [ "47b718f2f84149e4a2973d6271c4aa6a", "1cb257e2891d4c108c0a9b527ab2a76d" ],
+  "FirewallMatchesSources": [ "firewallRules", "firewallRules" ],
   "OriginIP": "127.0.0.1",
   "OriginResponseBytes": 0,
   "OriginResponseHTTPExpires": "Thu, 01 Jan 1970 01:00:00 GMT",
@@ -215,34 +224,66 @@ else
   echo >&2
   setup_cron
 
-  if [[ "${ES_ILM_DEFAULT_POLICY_ENABLED}" == "true" ]]; then
-    echo >&2 '### using default ilm policy'
+  if [[ "${ES_ILM_ENABLED}" == "true" ]]; then
+    echo >&2 '## ilm setup enabled'
     echo >&2
-    ilm_policy_file_arg="-E setup.ilm.policy_file='${ES_ILM_DEFAULT_POLICY_FILE}'"
+    if [[ "${ES_ILM_DEFAULT_POLICY_ENABLED}" == "true" ]]; then
+      echo >&2 '### using default ilm policy'
+      echo >&2
+      ilm_policy_file_arg="-E setup.ilm.policy_file='${ES_ILM_DEFAULT_POLICY_FILE}'"
+    elif [[ "${ES_ILM_POLICY_FILE}" != "_unset_" ]]; then
+      echo >&2 "### using custom ilm policy from \"${ES_ILM_POLICY_FILE}\""
+      echo >&2
+      if [[ ! -r "{ES_ILM_POLICY_FILE}" ]]; then
+        echo >&2 "ERROR: unable to read policy file \"${ES_ILM_POLICY_FILE}\""
+        exit 1
+      fi
+      ilm_policy_file_arg="-E setup.ilm.policy_file='${ES_ILM_POLICY_FILE}'"
+    else
+      echo >&2 '### ilm policy is not specified'
+      echo >&2
+    fi
+  else
+    echo >&2 '## ilm setup disabled'
   fi
 
-  if [[ "${ES_INDEX_DEFAULT_PIPELINE_ENABLED}" == "true" ]]; then
-    echo >&2 '## installing default pipeline'
+  if [[ "${ES_PIPELINE_ENABLED}" ]]; then
+    echo >&2 '## ingest pipeline enabled'
     echo >&2
-    install_pipeline
+    if [[ "${ES_PIPELINE_DEFAULT_ENABLED}" == "true" ]]; then
+      echo >&2 '### installing default pipeline'
+      echo >&2
+      install_pipeline
+    else
+      echo >&2 '### custom ingest pipeline is not supported at the moment'
+      echo >&2 '### though you could overwrite $ES_PIPELINE_DEFAULT_FILE value'
+      exit 1
+    fi
   fi
 
-  if [[ "${ES_INDEX_JSON_ENABLED}" == "true" ]]; then
-    echo >&2 '## generating index template'
+  if [[ "${ES_TEMPLATE_ENABLED}" == "true" ]]; then
+    echo >&2 '## template setup enabled'
     echo >&2
-    generate_index_template
+    if [[ "${ES_TEMPLATE_JSON_ENABLED}" == "true" ]]; then
+      echo >&2 '### generating index template'
+      echo >&2
+      generate_index_template
+    fi
+  else
+    echo >&2 '## template setup disabled'
+    echo >&2
   fi
 
   echo >&2 '## running Filebeat setup'
   echo >&2
   filebeat \
     -c "${FILEBEAT_CONFIG}" \
-    -E setup.ilm.enabled=true \
-    -E setup.ilm.overwrite=true \
+    -E setup.ilm.enabled=${ES_ILM_ENABLED} \
+    -E setup.ilm.overwrite=${ES_ILM_OVERWRITE} \
     ${ilm_policy_file_arg:-} \
-    -E setup.template.enabled=true \
-    -E setup.template.overwrite=true \
-    -E setup.template.json.enabled=${ES_INDEX_JSON_ENABLED} \
+    -E setup.template.enabled=${ES_TEMPLATE_ENABLED} \
+    -E setup.template.overwrite=${ES_TEMPLATE_OVERWRITE} \
+    -E setup.template.json.enabled=${ES_TEMPLATE_JSON_ENABLED} \
     setup --index-management
 
   echo >&2
