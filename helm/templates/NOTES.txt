@@ -1,2 +1,38 @@
+
+== Image ==
+Image: {{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}
+
+== Cloudflare config ==
+CF_ZONE_ID: {{ .Values.config.cloudflare.zoneId }}
+CF_AUTH_EMAIL: see output of "kubectl -n {{ .Release.Namespace }} get secrets {{ include "get-cloudflare-logs.fullname" . }} -o jsonpath='{.data.CF_AUTH_EMAIL}' | base64 -D"
+CF_AUTH_KEY: see output of "kubectl -n {{ .Release.Namespace }} get secrets {{ include "get-cloudflare-logs.fullname" . }} -o jsonpath='{.data.CF_AUTH_KEY}' | base64 -D"
+Logs Sample Rate: {{ .Values.config.cloudflare.sampleRate }} (0.01 = 1%)
+
+== Elasticsearch config ==
+ES_HOST: {{ .Values.config.elasticsearch.host }}
+{{- if .Values.config.elasticsearch.username }}
+ES_USERNAME is set, see output of "kubectl -n {{ .Release.Namespace }} get secrets {{ include "get-cloudflare-logs.fullname" . }} -o jsonpath='{.data.ES_USERNAME}' | base64 -D"
+{{- end -}}
+{{- if .Values.config.elasticsearch.password }}
+ES_PASSWORD is set, see output of "kubectl -n {{ .Release.Namespace }} get secrets {{ include "get-cloudflare-logs.fullname" . }} -o jsonpath='{.data.ES_PASSWORD}' | base64 -D"
+{{- end }}
+ES_INDEX: {{ .Values.config.elasticsearch.index.name }}
+
+ES_TEMPLATE_ENABLED: {{ default false .Values.config.elasticsearch.index.template.enabled }}
+{{- if .Values.config.elasticsearch.index.template.enabled }}
+ES_TEMPLATE_INDEX_SHARDS: {{ .Values.config.elasticsearch.index.template.shards }}
+ES_TEMPLATE_INDEX_REPLICAS: {{ .Values.config.elasticsearch.index.template.replicas }}
+ES_TEMPLATE_INDEX_REFRESH: {{ .Values.config.elasticsearch.index.template.refreshInterval }}
+
+{{- end }}
+ES_PIPELINE_ENABLED: {{ default false .Values.config.elasticsearch.pipeline.enabled }}
+ES_PIPELINE_DEFAULT_ENABLED: {{ default false .Values.config.elasticsearch.pipeline.default }}
+
+ES_ILM_ENABLED: {{ default false .Values.config.elasticsearch.ilm.enabled }}
+{{- if .Values.config.elasticsearch.ilm.enabled }}
+ES_ILM_POLICY: see output of "kubectl -n {{ .Release.Namespace }} get cm {{ .Release.Name }}-ilm-policy -o yaml"
+{{- end }}
+
+==================
 See application pods status by running these commands:
 kubectl --namespace {{ .Release.Namespace }} get pods

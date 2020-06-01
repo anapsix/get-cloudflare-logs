@@ -76,7 +76,7 @@ spec:
             - name: ES_PIPELINE_DEFAULT_ENABLED
               value: {{ default "false" .Values.config.elasticsearch.pipeline.default | quote }}
             - name: ES_ILM_ENABLED
-              value: {{ .Values.config.elasticsearch.ilm.enabled | quote }}
+              value: {{ default "false" .Values.config.elasticsearch.ilm.enabled | quote }}
             {{- if .Values.config.elasticsearch.ilm.enabled }}
             - name: ES_ILM_DEFAULT_POLICY_ENABLED
               value: "false"
