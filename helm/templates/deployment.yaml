@@ -30,48 +30,66 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          # command: ['bash', '-c', 'echo "running as $(whoami)"; ls -la /opt/extra-config; echo -n "\"${ES_ILM_POLICY_FILE}\" READ CHECK: "; [[ ! -r "${ES_ILM_POLICY_FILE}" ]] && echo "FAIL" || echo "OK"; sleep 3600']
           env:
-          - name: CF_ZONE_ID
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "get-cloudflare-logs.fullname" . }}
-                key: CF_ZONE_ID
-          - name: CF_AUTH_EMAIL
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "get-cloudflare-logs.fullname" . }}
-                key: CF_AUTH_EMAIL
-          - name: CF_AUTH_KEY
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "get-cloudflare-logs.fullname" . }}
-                key: CF_AUTH_KEY
-          - name: SAMPLE_RATE
-            value: {{ .Values.config.cloudflare.sampleRate | quote }}
-          - name: ES_HOST
-            value: {{ .Values.config.elasticsearch.host | quote }}
-          - name: ES_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "get-cloudflare-logs.fullname" . }}
-                key: ES_USERNAME
-          - name: ES_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: {{ include "get-cloudflare-logs.fullname" . }}
-                key: ES_PASSWORD
-          - name: ES_INDEX
-            value: {{ .Values.config.elasticsearch.index.name | quote }}
-          - name: ES_INDEX_SHARDS
-            value: {{ .Values.config.elasticsearch.index.shards | quote }}
-          - name: ES_INDEX_REPLICAS
-            value: {{ .Values.config.elasticsearch.index.replicas | quote }}
-          - name: ES_INDEX_REFRESH
-            value: {{ .Values.config.elasticsearch.index.refreshInterval | quote }}
-          - name: ES_INDEX_DEFAULT_PIPELINE_ENABLED
-            value: {{ default "false" .Values.config.elasticsearch.pipeline.default | quote }}
-          - name: ES_ILM_DEFAULT_POLICY_ENABLED
-            value: {{ default "false" .Values.config.elasticsearch.ilm.default | quote }}
+            - name: CF_ZONE_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "get-cloudflare-logs.fullname" . }}
+                  key: CF_ZONE_ID
+            - name: CF_AUTH_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "get-cloudflare-logs.fullname" . }}
+                  key: CF_AUTH_EMAIL
+            - name: CF_AUTH_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "get-cloudflare-logs.fullname" . }}
+                  key: CF_AUTH_KEY
+            - name: SAMPLE_RATE
+              value: {{ .Values.config.cloudflare.sampleRate | quote }}
+            - name: ES_HOST
+              value: {{ .Values.config.elasticsearch.host | quote }}
+            - name: ES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "get-cloudflare-logs.fullname" . }}
+                  key: ES_USERNAME
+            - name: ES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "get-cloudflare-logs.fullname" . }}
+                  key: ES_PASSWORD
+            - name: ES_INDEX
+              value: {{ .Values.config.elasticsearch.index.name | quote }}
+            - name: ES_TEMPLATE_ENABLED
+              value: {{ default "false" .Values.config.elasticsearch.index.template.enabled | quote }}
+            - name: ES_TEMPLATE_INDEX_SHARDS
+              value: {{ .Values.config.elasticsearch.index.template.shards | quote }}
+            - name: ES_TEMPLATE_INDEX_REPLICAS
+              value: {{ .Values.config.elasticsearch.index.template.replicas | quote }}
+            - name: ES_TEMPLATE_INDEX_REFRESH
+              value: {{ .Values.config.elasticsearch.index.template.refreshInterval | quote }}
+            - name: ES_PIPELINE_ENABLED
+              value: {{ default "false" .Values.config.elasticsearch.pipeline.enabled | quote }}
+            - name: ES_PIPELINE_DEFAULT_ENABLED
+              value: {{ default "false" .Values.config.elasticsearch.pipeline.default | quote }}
+            - name: ES_ILM_ENABLED
+              value: {{ default "false" .Values.config.elasticsearch.ilm.enabled | quote }}
+            {{- if .Values.config.elasticsearch.ilm.enabled }}
+            - name: ES_ILM_DEFAULT_POLICY_ENABLED
+              value: "false"
+            - name: ES_ILM_POLICY_FILE
+              value: "/opt/extra-config/ilm-policy.json"
+            {{- end }}
+          {{- if .Values.config.elasticsearch.ilm.enabled }}
+          volumeMounts:
+            - name: ilm-policy
+              mountPath: /opt/extra-config/ilm-policy.json
+              subPath: ilm-policy.json
+              readOnly: true
+          {{- end }}
           livenessProbe:
             exec:
               command:
@@ -88,6 +106,12 @@ spec:
             periodSeconds: 5
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      {{- if .Values.config.elasticsearch.ilm.enabled }}
+      volumes:
+        - name: ilm-policy
+          configMap:
+            name: {{ .Release.Name }}-ilm-policy
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

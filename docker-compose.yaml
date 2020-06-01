@@ -15,11 +15,13 @@ services:
     - SAMPLE_RATE=0.01
     - ES_HOST=http://elasticsearch:9200
     - ES_INDEX=cloudflare-test
-    - ES_INDEX_SHARDS=1
-    - ES_INDEX_REPLICAS=0
-    - ES_INDEX_REFRESH=10s
+    - ES_TEMPLATE_ENABLED=true
+    - ES_TEMPLATE_INDEX_SHARDS=1
+    - ES_TEMPLATE_INDEX_REPLICAS=0
+    - ES_TEMPLATE_INDEX_REFRESH=10s
+    - ES_ILM_ENABLED=true
     - ES_ILM_DEFAULT_POLICY_ENABLED=true
-    - ES_INDEX_DEFAULT_PIPELINE_ENABLED=true
+    - ES_PIPELINE_DEFAULT_ENABLED=true
     healthcheck:
       test: 'pgrep filebeat || exit 1'
       interval: 30s

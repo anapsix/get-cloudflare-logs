@@ -1,0 +1,20 @@
+{{- if .Values.config.elasticsearch.ilm.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-ilm-policy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "get-cloudflare-logs.labels" . | nindent 4 }}
+data:
+  ilm-policy.json: |-
+{{- if .Values.config.elasticsearch.ilm.policyYAML }}
+    {
+      "policy": {{- toPrettyJson .Values.config.elasticsearch.ilm.policyYAML | nindent 6 }}
+    }
+{{ else if .Values.config.elasticsearch.ilm.policyJSON }}
+{{ .Values.config.elasticsearch.ilm.policyJSON | indent 4 }}
+{{ else }}
+{{ .Files.Get .Values.config.elasticsearch.ilm.policyFile | indent 4 }}
+{{ end -}}
+{{- end -}}

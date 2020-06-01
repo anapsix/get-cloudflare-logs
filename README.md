@@ -35,12 +35,23 @@ After launching local environment, access Kibana via http://localhost:5601/app/k
 #### With Docker Compose
 
 ```sh
+# (re)build
+docker-compose build
+
 # launch Elasticsearch, Kibana, and get-logs container instances
 docker-compose up -d
 
 # keep an eye on the logs
 docker-compose logs -f get-logs
 ```
+
+After launching local environment, access Kibana via http://localhost:5601/app/kibana#/discover.
+
+> NOTE: since log collection is running on schedule, data will not appear in ES
+> immediately. Keen an eye on the logs, and `./logs` directory. ES index will
+> receive data shortly after you see new file appearing, and / or
+> `Harvester started for file:...` log message in the logs. Create an index
+> pattern while you are waiting.
 
 #### Launch manually
 
@@ -67,7 +78,7 @@ docker run -it --rm \
   -e SAMPLE_RATE="0.01" \
   -e ES_HOST="http://elasticsearch:9200" \
   -e ES_INDEX="cloudflare-test" \
-  -e ES_INDEX_SHARD=6 \
+  -e ES_INDEX_SHARD=5 \
   -e ES_INDEX_REPLICAS=0 \
   -e ES_INDEX_REFRESH=10s \
   --link es:elasticsearch \
@@ -82,7 +93,8 @@ Open-sourced software licensed under the MIT license.
 
 ## Acknowledgments
 
-This repo includes and relies on [go-tasks][go-tasks], created by [Martin Fabrizzio Vilche][mvilche]
+This repo includes and relies on [go-tasks][go-tasks], created by
+[Martin Fabrizzio Vilche][mvilche]. Thank you 🙏, Martin.
 
 [link reference]::
 [logpull]: https://developers.cloudflare.com/logs/logpull-api/
