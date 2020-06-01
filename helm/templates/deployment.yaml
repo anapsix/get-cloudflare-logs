@@ -13,6 +13,8 @@ spec:
       {{- include "get-cloudflare-logs.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      annotations:
+        checksum/ilm-policy: {{ include (print $.Template.BasePath "/configmap-ilm-policy.yaml") . | sha256sum }}
       labels:
         {{- include "get-cloudflare-logs.selectorLabels" . | nindent 8 }}
     spec:
