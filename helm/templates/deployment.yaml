@@ -30,6 +30,7 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          # command: ['bash', '-c', 'echo "running as $(whoami)"; ls -la /opt/extra-config; echo -n "\"${ES_ILM_POLICY_FILE}\" READ CHECK: "; [[ ! -r "${ES_ILM_POLICY_FILE}" ]] && echo "FAIL" || echo "OK"; sleep 3600']
           env:
             - name: CF_ZONE_ID
               valueFrom:
@@ -80,12 +81,12 @@ spec:
             - name: ES_ILM_DEFAULT_POLICY_ENABLED
               value: "false"
             - name: ES_ILM_POLICY_FILE
-              value: "/opt/filebeat/ilm-policy.json"
+              value: "/opt/extra-config/ilm-policy.json"
             {{- end }}
           {{- if .Values.config.elasticsearch.ilm.enabled }}
           volumeMounts:
             - name: ilm-policy
-              mountPath: /opt/filebeat/ilm-policy.json
+              mountPath: /opt/extra-config/ilm-policy.json
               subPath: ilm-policy.json
               readOnly: true
           {{- end }}

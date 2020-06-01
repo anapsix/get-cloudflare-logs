@@ -76,6 +76,7 @@ will be used.
 To customize ILM policy, change `config.elasticsearch.ilm.policyYAML`.
 
 > ILM policy is stored as ConfigMap, and passed to the pods via read-only mount.
+> It is mounted under `/opt/extra-config/ilm-policy.json` inside the pod.
 
 ILM policy can be defined using any of the following attributes, listed in the
 order of precedence.
@@ -86,6 +87,7 @@ order of precedence.
 If `policyYAML` is unset, or evaluates to `false`, `policyJSON` will be used.
 If both `policyYAML`, and `policyJSON` are unset, or evaluate to `false`,
 `policyFile` will be used
+
 
 Read more about ILM and ILM policy in [Elasticsearch docs][ilm-docs].
 

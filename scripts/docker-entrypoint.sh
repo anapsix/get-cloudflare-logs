@@ -234,7 +234,7 @@ else
     elif [[ "${ES_ILM_POLICY_FILE}" != "_unset_" ]]; then
       echo >&2 "### using custom ilm policy from \"${ES_ILM_POLICY_FILE}\""
       echo >&2
-      if [[ ! -r "{ES_ILM_POLICY_FILE}" ]]; then
+      if [[ ! -r "${ES_ILM_POLICY_FILE}" ]]; then
         echo >&2 "ERROR: unable to read policy file \"${ES_ILM_POLICY_FILE}\""
         exit 1
       fi
