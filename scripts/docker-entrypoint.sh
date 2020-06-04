@@ -193,14 +193,6 @@ get_logs() {
     --end="${_end_epoch}" \
     --exclude-empty \
     > ${CF_LOGS_DIRECTORY}/cloudflare_${_suffix}.log
-
-  /usr/local/bin/get_cloudflare_logs.sh \
-    --access-logs \
-    --start="@${_start_epoch}" \
-    --end="@${_end_epoch}" \
-    --sample="${SAMPLE_RATE}" \
-    --all-fields \
-    > ${CF_LOGS_DIRECTORY}/cloudflare_${_suffix}.log
 }
 
 if [[ "${1:-}" == "--from-cron" ]]; then

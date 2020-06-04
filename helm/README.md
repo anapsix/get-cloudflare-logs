@@ -39,7 +39,7 @@ $ helm delete my-release
 ------------------------------- | -------------------------------------- | ---------
 `image.pullPolicy`              | Image pull policy                      | `Always`
 `image.repository`              | Image repository                       | `docker.io/anapsix/get-cloudflare-logs`
-`image.tag`                     | Image tag                              | `0.5.0` (same as `.Chart.AppVersion`)
+`image.tag`                     | Image tag                              | `0.6.0` (same as `.Chart.AppVersion`)
 `image.pullSecrets`             | Specify image pull secrets             | `[]`
 `terminationGracePeriodSeconds` | Termination grace period (in seconds)  | `15`
 `revisionHistoryLimit`          | How many old ReplicaSets for this Deployment you want to retain | `10`
