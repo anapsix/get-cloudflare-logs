@@ -1,6 +1,7 @@
 Retrieving Cloudflare logs via [Logpull API][logpull] with [feron][feron], and pushing them
 into Elasticsearch with [Filebeat][filebeat].
 
+[![Artifact HUB](https://img.shields.io/endpoint?style=flat-square&url=https://artifacthub.io/badge/repository/anapsix)][helm-chart-published]
 [![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/anapsix/get-cloudflare-logs?style=flat-square)][docker-hub-image]
 [![Docker Pulls](https://img.shields.io/docker/pulls/anapsix/get-cloudflare-logs?style=flat-square)][docker-hub-image]
 [![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/anapsix/get-cloudflare-logs?style=flat-square)][docker-hub-image]
@@ -8,7 +9,7 @@ into Elasticsearch with [Filebeat][filebeat].
 
 ## Helm Chart
 
-The whole shebang can be installed onto K8s cluster with included [Helm chart][helm-chart].
+The whole shebang can be installed onto K8s cluster with included [Helm chart][helm-chart]. Chart is published to https://charts.random.io, and registered with [Artifact Hub][helm-chart-published]
 
 
 ## Local Development
@@ -107,3 +108,4 @@ This repo includes and relies on [go-tasks][go-tasks], created by
 [go-tasks]: https://github.com/mvilche/go-tasks
 [mvilche]: https://github.com/mvilche
 [docker-hub-image]: https://hub.docker.com/repository/docker/anapsix/get-cloudflare-logs
+[helm-chart-published]: https://artifacthub.io/packages/helm/anapsix/get-cloudflare-logs
